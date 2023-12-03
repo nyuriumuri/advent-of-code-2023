@@ -33,10 +33,15 @@ pub fn part_one(input: &str) -> Option<u32> {
                 end - 1
             };
 
-            let valid = SYM_RE.is_match(&input[left..left + 1])
-                || SYM_RE.is_match(&input[right..right + 1])
-                || SYM_RE.is_match(&input[left - line_len..right - line_len + 1])
-                || SYM_RE.is_match(&input[left + line_len..right + line_len + 1]);
+            let valid = SYM_RE.is_match(
+                &[
+                    &input[left..left + 1],
+                    &input[right..right + 1],
+                    &input[left - line_len..right - line_len + 1],
+                    &input[left + line_len..right + line_len + 1],
+                ]
+                .concat(),
+            );
             match valid {
                 true => c[0].parse::<u32>().expect("Couldn't convert to u32"),
                 false => 0u32,
