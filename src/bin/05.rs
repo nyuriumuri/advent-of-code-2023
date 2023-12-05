@@ -1,6 +1,6 @@
 advent_of_code::solution!(5);
 
-use std::{cmp::Ordering, thread};
+use std::cmp::Ordering;
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -17,11 +17,6 @@ pub fn part_one(input: &str) -> Option<u32> {
     let input = input.trim();
     let (seeds_line, input) = input.split_once('\n').unwrap();
 
-    let seeds: Vec<u32> = DIGIT_RE
-        .captures_iter(seeds_line)
-        .map(|c| c[0].parse::<u32>().unwrap())
-        .collect();
-
     let layers: Vec<MapLayer> = TITLE_RE.split(input).map(MapLayer::from).collect();
 
     let convert_seed = |seed: u32| {
@@ -30,12 +25,12 @@ pub fn part_one(input: &str) -> Option<u32> {
             .fold(seed, |acc, layer: &MapLayer| layer.convert(acc))
     };
 
-    let res = seeds
-        .into_iter()
+    DIGIT_RE
+        .captures_iter(seeds_line)
+        // .par_bridge()
+        .map(|c| c[0].parse::<u32>().unwrap())
         .map(convert_seed)
         .min()
-        .expect("Seeds is empty");
-    Some(res)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
@@ -57,26 +52,29 @@ pub fn part_two(input: &str) -> Option<usize> {
             .unwrap()
     };
 
-    let thread_handles: Vec<thread::JoinHandle<usize>> = SEEDS_PART2_RE
+    let res = SEEDS_PART2_RE
         .captures_iter(seeds_line)
         .map(|c| {
             let start = c["start"].parse::<usize>().unwrap();
             let range = c["range"].parse::<usize>().unwrap();
-            let seed = SeedRange {
+            SeedRange {
                 start,
                 end: start + range - 1,
-            };
-            let layers = layers.clone();
-            thread::spawn(move || convert_seed(seed, &layers))
+            }
+            // let layers = layers.clone();
+            // thread::spawn(move || convert_seed(seed, &layers))
         })
-        .collect();
-
-    let res = thread_handles
-        .into_iter()
-        .map(|handle| handle.join().unwrap())
-        .min()
-        .unwrap();
-    Some(res)
+        // .par_bridge()
+        .map(|seed| convert_seed(seed, &layers))
+        .min();
+    // .collect();
+    //
+    // let res = thread_handles
+    //     .into_iter()
+    //     .map(|handle| handle.join().unwrap())
+    //     .min()
+    //     .unwrap();
+    res
     // None
 }
 
@@ -174,7 +172,6 @@ impl Map {
 
     fn convert_range(&self, s: &SeedRange) -> Option<SeedRange> {
         if s.start >= self.source_start && s.end <= self.source_start + self.range - 1 {
-
             Some(SeedRange {
                 start: self.dest_start + s.start - self.source_start,
                 end: s.end - self.source_start + self.dest_start,
