@@ -171,7 +171,7 @@ impl Map {
     }
 
     fn convert_range(&self, s: &SeedRange) -> Option<SeedRange> {
-        if s.start >= self.source_start && s.end <= self.source_start + self.range - 1 {
+        if s.start >= self.source_start && s.end < self.source_start + self.range {
             Some(SeedRange {
                 start: self.dest_start + s.start - self.source_start,
                 end: s.end - self.source_start + self.dest_start,
