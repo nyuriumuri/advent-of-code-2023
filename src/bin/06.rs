@@ -6,15 +6,15 @@ use regex::Regex;
 lazy_static! {
     static ref DIGIT_RE: Regex = Regex::new(r"\d+").unwrap();
 }
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<usize> {
     let (time_str, dist_str) = input.split_once('\n').unwrap();
-    let res: u32 = DIGIT_RE
+    let res: usize = DIGIT_RE
         .captures_iter(time_str)
-        .map(|c| c[0].parse::<u32>().unwrap())
+        .map(|c| c[0].parse::<usize>().unwrap())
         .zip(
             DIGIT_RE
                 .captures_iter(dist_str)
-                .map(|c| c[0].parse::<u32>().unwrap()),
+                .map(|c| c[0].parse::<usize>().unwrap()),
         )
         .map(|pair| Race {
             time: pair.0,
@@ -25,18 +25,34 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(res)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let (time_str, dist_str) = input.split_once('\n').unwrap();
+    let time = time_str
+        .chars()
+        .filter(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse::<usize>()
+        .unwrap();
+
+    let distance = dist_str
+        .chars()
+        .filter(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse::<usize>()
+        .unwrap();
+
+    Some(Race { time, distance }.solve())
 }
 
 #[derive(Debug, Clone, Copy)]
 struct Race {
-    time: u32,
-    distance: u32,
+    time: usize,
+    distance: usize,
 }
 
 impl Race {
-    fn solve(&self) -> u32 {
+    fn solve(&self) -> usize {
+        // quadratic formula. a=1, b=time, c=-distance
         let b = self.time as f32;
         let c = -(self.distance as f32);
         let root = f32::sqrt(b.powf(2f32) + 4f32 * c);
@@ -44,15 +60,15 @@ impl Race {
         let x2 = (-root - b) / -2f32;
 
         let x1 = if x1.fract() == 0f32 {
-            x1 as u32 + 1
+            x1 as usize + 1
         } else {
-            x1.ceil() as u32
+            x1.ceil() as usize
         };
 
         let x2 = if x2.fract() == 0f32 {
-            x2 as u32 - 1
+            x2 as usize - 1
         } else {
-            x2.floor() as u32
+            x2.floor() as usize
         };
 
         x2 - x1 + 1
@@ -72,6 +88,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(71503));
     }
 }
