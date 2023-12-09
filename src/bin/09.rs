@@ -33,39 +33,22 @@ pub fn part_two(input: &str) -> Option<i32> {
                 // .rev()
                 .collect()
         })
-        .map(get_prev)
+        .map(get_next)
         .sum();
     Some(res)
 }
 fn get_next(input: Vec<i32>) -> i32 {
+    if let (Some(0) | None, Some(0) | None) = (input.last(), input.first()) {
+        return 0;
+    }
     let end = *input.first().unwrap_or(&0);
 
-    if end == 0 {
-        return 0;
-    };
-
     let diffs: Vec<i32> = input
         .into_iter()
         .tuple_windows()
-        .map(|(a, b)| b - a)
+        .map(|(a, b)| a - b)
         .collect();
-    end - get_next(diffs)
-}
-
-fn get_prev(input: Vec<i32>) -> i32 {
-    match input.last() {
-        Some(0) | None => return 0,
-        _ => {}
-    }
-    let first = *input.first().unwrap_or(&0);
-
-    let diffs: Vec<i32> = input
-        .into_iter()
-        .tuple_windows()
-        .map(|(a, b)| b - a)
-        .collect();
-
-    first - get_prev(diffs)
+    end + get_next(diffs)
 }
 
 #[cfg(test)]
