@@ -44,7 +44,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut unvisited = HashSet::new();
     let mut visited = HashSet::new();
     for vertex in grid.keys() {
-        distances.insert(vertex, u32::MAX);
+        distances.insert(vertex, 0);
     }
 
     unvisited.insert(starting);
@@ -65,9 +65,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         let cur = *unvisited
             .iter()
             .sorted_by(|&a, &b| {
-                let d_a = distances.get(a).unwrap_or(&u32::MAX);
-                let d_b = distances.get(b).unwrap_or(&u32::MAX);
-                Ord::cmp(d_a, d_b)
+                let d_a = distances.get(a).unwrap_or(&0);
+                let d_b = distances.get(b).unwrap_or(&0);
+                Ord::cmp(d_b, d_a)
                 // distances.get(&a).u nwrap().cmp(distances.get(&b).unwrap())
             })
             .next()
@@ -82,13 +82,13 @@ pub fn part_one(input: &str) -> Option<u32> {
         let cur_d = distances.get(cur).unwrap().clone();
         for neighbor in neighbors {
             if let Some(d) = distances.get_mut(neighbor) {
-                *d = u32::min(*d, cur_d + 1);
+                *d = u32::max(*d, cur_d + 1);
                 unvisited.insert(neighbor);
             }
         }
     }
 
-    distances.into_iter().filter(|(v, d)| visited.contains(v)).map(|(v, d)| d).max()
+    Some(distances.into_iter().filter(|(v, d)| visited.contains(v)).map(|(v, d)| d).max().unwrap() / 2 + 1)
 }
 
 pub fn part_two(input: &str) -> Option<i32> {
